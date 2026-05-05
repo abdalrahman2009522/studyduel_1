@@ -1,0 +1,190 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile, statistics, and game data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "email": { "type": "string" },
+        "bio": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "moderator", "admin"] },
+        "character": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "skin": { "type": "string" },
+            "items": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "xp": { "type": "number" },
+            "level": { "type": "number" },
+            "wins": { "type": "number" },
+            "totalDuels": { "type": "number" },
+            "streak": { "type": "number" },
+            "points": { "type": "number" },
+            "rank": { "type": "string", "enum": ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master"] },
+            "subjectProficiency": { "type": "object" }
+          }
+        },
+        "inventory": {
+          "type": "object",
+          "properties": {
+            "frames": { "type": "array", "items": { "type": "string" } },
+            "icons": { "type": "array", "items": { "type": "string" } },
+            "activeFrame": { "type": "string" }
+          }
+        },
+        "achievements": { "type": "array", "items": { "type": "string" } },
+        "friends": { "type": "array", "items": { "type": "string" } },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "theme": { "type": "string" },
+            "quranReciter": { "type": "string" },
+            "quranEnabled": { "type": "boolean" }
+          }
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Achievement": {
+      "title": "Achievement Definition",
+      "description": "Definition of an unlockable achievement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nameAr": { "type": "string" },
+        "descriptionAr": { "type": "string" },
+        "icon": { "type": "string" },
+        "criteria": { "type": "object" },
+        "xpReward": { "type": "number" }
+      },
+      "required": ["id", "nameAr", "descriptionAr", "icon"]
+    },
+    "ShopItem": {
+      "title": "Shop Item",
+      "description": "Item available for purchase in the shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nameAr": { "type": "string" },
+        "type": { "type": "string", "enum": ["frame", "icon", "character_skin"] },
+        "price": { "type": "number" },
+        "image": { "type": "string" }
+      },
+      "required": ["id", "nameAr", "type", "price"]
+    },
+    "ChallengeRecord": {
+      "title": "Challenge Record",
+      "description": "History and active sessions of a challenge/duel",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "opponentId": { "type": "string" },
+        "score": { "type": "number" },
+        "opponentScore": { "type": "number" },
+        "win": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["active", "completed"] },
+        "currentQuestionIndex": { "type": "number" },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "questionId": { "type": "string" },
+              "correct": { "type": "boolean" },
+              "answerIndex": { "type": "number" },
+              "text": { "type": "string" },
+              "options": { "type": "array", "items": { "type": "string" } },
+              "correctAnswer": { "type": "number" }
+            },
+            "required": ["questionId", "text", "options", "correctAnswer"]
+          }
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "subjectId", "score", "timestamp"]
+    },
+    "CommunityPost": {
+      "title": "Community Post",
+      "description": "Post in the community hub",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "content": { "type": "string" },
+        "likes": { "type": "array", "items": { "type": "string" } },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "content", "timestamp"]
+    },
+    "Question": {
+      "title": "Study Question",
+      "description": "Educational questions managed by admins",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctAnswer": { "type": "number" },
+        "subjectId": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["text", "options", "correctAnswer", "subjectId"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Global chat messages",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderAvatar": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "reactions": { "type": "object" },
+        "challengeId": { "type": "string" }
+      },
+      "required": ["text", "senderId", "timestamp"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Public and private user data"
+    },
+    "questions/{questionId}": {
+      "schema": "Question",
+      "description": "Shared pool of study questions"
+    },
+    "chat_messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Global chat messages history"
+    },
+    "achievements/{achievementId}": {
+      "schema": "Achievement",
+      "description": "Available achievements"
+    },
+    "shop_items/{itemId}": {
+      "schema": "ShopItem",
+      "description": "Items in the cosmetic shop"
+    },
+    "challenge_records/{recordId}": {
+      "schema": "ChallengeRecord",
+      "description": "History of user challenges"
+    },
+    "community_posts/{postId}": {
+      "schema": "CommunityPost",
+      "description": "User posts in the community hub"
+    }
+  }
+}

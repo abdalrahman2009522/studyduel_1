@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #EEF2FF;
+  --surface: #FFFFFF;
+  --text-main: #1E293B;
+  --text-muted: #64748B;
+  --primary: #6366F1;
+}
+
+:root.dark {
+  --background: #0F172A;
+  --surface: #1E293B;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --primary: #818CF8;
+}
+
+@theme {
+  --font-sans: "Inter", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: var(--primary);
+  --color-secondary: #F59E0B;
+  --color-surface: var(--surface);
+  --color-background: var(--background);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+}
+
+@layer base {
+  html, body {
+    @apply bg-background text-text-main antialiased transition-colors duration-300;
+  }
+  
+  * {
+    @apply border-slate-200 dark:border-slate-800;
+  }
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.duel-button {
+  @apply bg-secondary text-white font-extrabold px-8 py-4 rounded-2xl shadow-[0_4px_0_#D97706] transition-all active:translate-y-1 active:shadow-none;
+}
+
+.glass-card {
+  @apply bg-white/90 backdrop-blur-md border border-white/40 shadow-xl shadow-primary/5;
+}
+
+.arabic-text {
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+}
+
+@keyframes ring {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(15deg); }
+  20% { transform: rotate(-10deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(8deg); }
+  60% { transform: rotate(-5deg); }
+  70% { transform: rotate(5deg); }
+  80% { transform: rotate(-3deg); }
+  90% { transform: rotate(2deg); }
+  100% { transform: rotate(0); }
+}
+
+.animate-ring {
+  animation: ring 2s ease-in-out infinite;
+  transform-origin: top center;
+}
