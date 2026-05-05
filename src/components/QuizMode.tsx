@@ -674,16 +674,16 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
                     <span className="text-text-muted font-bold text-sm">سؤال {idx + 1}</span>
                   </div>
                   <h3 className="text-lg font-black arabic-text text-right mb-6 text-text-main">{q.text}</h3>
-                  <div className="space-y-3">
-                    {q.options.map((opt, oIdx) => (
-                      <div key={oIdx} className={`p-4 rounded-2xl border-2 text-right arabic-text font-bold transition-all
-                        ${oIdx === q.correctAnswer ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' : 
-                          oIdx === answer?.answerIndex && !isCorrect ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400' : 'bg-surface border-slate-50 dark:border-slate-800 text-text-muted'}
-                      `}>
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
+                    <div className="space-y-3">
+                      {q.options.map((opt, oIdx) => (
+                        <div key={oIdx} className={`p-4 rounded-2xl border-2 text-right arabic-text font-bold transition-all
+                          ${oIdx === q.correctAnswer ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' : 
+                            oIdx === answer?.answerIndex && !isCorrect ? 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400' : 'bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 text-text-muted'}
+                        `}>
+                          {opt}
+                        </div>
+                      ))}
+                    </div>
                   {q.explanation && (
                     <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl text-right arabic-text text-sm text-blue-600 dark:text-blue-400 leading-relaxed">
                       <strong>الشرح:</strong> {q.explanation}
@@ -877,15 +877,15 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
 
                     if (selectedOption !== null) {
                       if (idx === currentQuestion.correctAnswer) {
-                        statusClass = "bg-green-500 border-green-500 text-white shadow-xl shadow-green-500/20";
+                        statusClass = "bg-gradient-to-br from-green-400 to-green-600 border-green-300 text-white shadow-2xl shadow-green-500/30 ring-4 ring-green-100 dark:ring-green-900/40";
                         icon = <CheckCircle2 size={24} className="text-white" />;
                         labelClass = "bg-white/20 text-white";
                       } else if (idx === selectedOption) {
-                        statusClass = "bg-red-500 border-red-500 text-white shadow-xl shadow-red-500/20";
+                        statusClass = "bg-gradient-to-br from-red-500 to-red-700 border-red-400 text-white shadow-2xl shadow-red-500/30 ring-4 ring-red-100 dark:ring-red-900/40";
                         icon = <Skull size={24} className="text-white" />;
                         labelClass = "bg-white/20 text-white";
                       } else {
-                        statusClass = "bg-surface border-slate-100 dark:border-slate-800 opacity-40 grayscale text-text-muted";
+                        statusClass = "bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 opacity-40 grayscale text-text-muted cursor-not-allowed transform scale-[0.98]";
                       }
                     }
 
