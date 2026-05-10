@@ -78,11 +78,27 @@ export function VirtualAssistant() {
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 20 }}
             onClick={() => setIsOpen(true)}
-            className="pointer-events-auto w-16 h-16 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all relative group overflow-hidden"
+            className="pointer-events-auto w-16 h-16 bg-[#747474] rounded-2xl shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all relative group overflow-hidden border-2 border-white/20"
           >
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-            <Bot size={32} className="relative z-10" />
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] font-black">1</div>
+            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-10 h-10 object-contain relative z-10"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                // Fallback to Bot icon if image is missing
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent && !parent.querySelector('.fallback-icon')) {
+                  const icon = document.createElement('div');
+                  icon.className = 'fallback-icon';
+                  icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>';
+                  parent.appendChild(icon);
+                }
+              }}
+            />
           </motion.button>
         )}
 
@@ -96,10 +112,10 @@ export function VirtualAssistant() {
               height: isMinimized ? '80px' : '600px'
             }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className={`pointer-events-auto w-full max-w-[400px] bg-white rounded-[40px] shadow-2xl border border-slate-100 flex flex-col overflow-hidden transition-all duration-300`}
-          >
-            {/* Header */}
-            <div className="p-6 bg-slate-900 text-white flex flex-row-reverse items-center justify-between shrink-0">
+            className={`pointer-events-auto w-full max-w-[400px] bg-white dark:bg-slate-900 rounded-[40px] shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300`}
+        >
+          {/* Header */}
+          <div className="p-6 bg-slate-900 dark:bg-slate-950 text-white flex flex-row-reverse items-center justify-between shrink-0">
                <div className="flex flex-row-reverse items-center gap-3">
                   <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
                      <Sparkles size={20} className="text-white" />
@@ -122,7 +138,7 @@ export function VirtualAssistant() {
             {!isMinimized && (
               <>
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/50 custom-scrollbar">
                   {messages.map((m, i) => (
                     <motion.div
                       key={i}
@@ -134,7 +150,7 @@ export function VirtualAssistant() {
                           max-w-[80%] p-4 rounded-[24px] text-sm arabic-text font-bold leading-relaxed
                           ${m.role === 'user' 
                             ? 'bg-primary text-white rounded-tr-none' 
-                            : 'bg-white text-slate-700 shadow-sm border border-slate-100 rounded-tl-none'}
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm border border-slate-100 dark:border-slate-700 rounded-tl-none'}
                        `}>
                           <Markdown>{m.content}</Markdown>
                        </div>
@@ -153,14 +169,14 @@ export function VirtualAssistant() {
                 </div>
 
                 {/* Input */}
-                <div className="p-6 border-t border-slate-100 bg-white">
-                   <div className="flex flex-row-reverse items-center gap-3 bg-slate-50 p-2 rounded-[28px] border border-slate-100 focus-within:border-primary/30 transition-all">
+                <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                   <div className="flex flex-row-reverse items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-[28px] border border-slate-100 dark:border-slate-700 focus-within:border-primary/30 transition-all">
                       <input 
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         placeholder="اسألني أي شيء..."
-                        className="flex-1 bg-transparent border-none focus:outline-none text-right arabic-text font-bold px-4 h-12"
+                        className="flex-1 bg-transparent border-none focus:outline-none text-right arabic-text font-bold px-4 h-12 text-slate-900 dark:text-white"
                       />
                       <button 
                         onClick={handleSend}

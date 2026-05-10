@@ -13,7 +13,8 @@ import {
   Heart,
   Skull,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  Flame
 } from 'lucide-react';
 import { Question, SUBJECTS, ChallengeRecord } from '../types.ts';
 import { QUESTIONS_DATA } from '../data/questions.ts';
@@ -22,6 +23,7 @@ import { useSocket } from '../context/SocketContext';
 import { db } from '../lib/firebase';
 import { collection, addDoc, updateDoc, doc, increment, serverTimestamp } from 'firebase/firestore';
 import { GoogleGenAI } from "@google/genai";
+import { calculateLevel } from '../lib/gameLogic';
 
 import { soundManager } from '../lib/soundManager';
 
@@ -266,9 +268,11 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
   const saveResult = async (finalScore: number) => {
     if (!profile || !recordId) return;
     
-    const xpGained = finalScore * 15;
+    const finalOpponentScore = opponent?.isBot ? botScore : Math.floor(Math.random() * questions.length);
+    const win = finalScore > finalOpponentScore; 
+    const winBonus = win ? 50 : 0;
+    const xpGained = (finalScore * 15) + winBonus;
     const pointsGained = finalScore * 5;
-    const win = finalScore >= (questions.length / 2); 
 
     generateAIInsights(finalScore);
 
@@ -276,19 +280,27 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
       // Update record in Review Center
       await updateDoc(doc(db, 'challenge_records', recordId), {
         score: finalScore,
-        opponentScore: opponent?.isBot ? botScore : Math.floor(Math.random() * questions.length),
+        opponentScore: finalOpponentScore,
         win,
         status: 'completed',
         timestamp: serverTimestamp()
       });
 
       // Update user stats
+      const newXp = (profile.stats.xp || 0) + xpGained;
+      const newLevel = calculateLevel(newXp);
+      
+      const currentStreak = profile.stats.streak || 0;
+      const newStreak = win ? currentStreak + 1 : 0;
+
       const userRef = doc(db, 'users', profile.uid);
       await updateDoc(userRef, {
         'stats.xp': increment(xpGained),
+        'stats.level': newLevel,
         'stats.points': increment(pointsGained),
         'stats.wins': increment(win ? 1 : 0),
-        'stats.totalDuels': increment(1)
+        'stats.totalDuels': increment(1),
+        'stats.streak': newStreak
       });
     } catch (err) {
       console.error("Failed to update results:", err);
@@ -582,7 +594,7 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
               </div>
               <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-[28px] border border-blue-100 dark:border-blue-800 group hover:border-blue-500 transition-all">
                 <p className="text-xs text-blue-400 arabic-text font-black uppercase tracking-widest mb-2">الجوائز</p>
-                <p className="text-3xl font-black text-blue-600">+{score * 15} XP</p>
+                <p className="text-3xl font-black text-blue-600">+{ (score * 15) + (score >= (questions.length / 2) ? 50 : 0) } XP</p>
                 <p className="text-[10px] font-bold text-blue-400 arabic-text mt-1">تمت إضافتها لملفك</p>
               </div>
             </div>
@@ -724,7 +736,15 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
             )}
           </div>
           <div className="text-right">
-            <div className="text-2xl font-black text-text-main tabular-nums">{score}</div>
+            <div className="text-2xl font-black text-text-main tabular-nums flex items-center justify-end gap-1">
+              {profile?.stats.streak > 0 && (
+                <div className="flex items-center gap-0.5 text-orange-500 animate-pulse" title="سلسلة فوز">
+                  <Flame size={18} fill="currentColor" />
+                  <span className="text-sm">{profile.stats.streak}</span>
+                </div>
+              )}
+              {score}
+            </div>
           </div>
         </div>
 
@@ -749,7 +769,16 @@ export function QuizMode({ subjectId, onClose }: QuizModeProps) {
 
         <div className="flex items-center gap-4">
           <div className="text-left">
-            <div className="text-2xl font-black text-text-main tabular-nums">{opponent?.isBot ? botScore : '...'}</div>
+            <div className="text-2xl font-black text-text-main tabular-nums flex items-center gap-1">
+              {botScore}
+              {opponent?.isBot && profile?.stats.streak > 2 && (
+                <div className="flex items-center gap-0.5 text-slate-400 opacity-50" title="سلسلة الخصم">
+                  <Flame size={18} fill="currentColor" />
+                  <span className="text-sm">0</span>
+                </div>
+              )}
+              {/* If real opponent, we'd show their streak here */}
+            </div>
             {opponent?.isBot && (
               <div className="text-[9px] font-black arabic-text uppercase tracking-tighter h-3">
                 {botStatus === 'thinking' && <span className="text-blue-500 animate-pulse">يفكر... 🧠</span>}

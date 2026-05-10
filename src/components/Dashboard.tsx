@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SUBJECTS, AppUser, CommunityPost } from '../types.ts';
 import { ProfileAvatar } from './ProfileAvatar';
+import { LevelBadge } from './LevelBadge';
 import { useAuth } from '../context/AuthContext';
 import { calculateLevel, getRank, SHOP_ITEMS } from '../lib/gameLogic';
 import { db } from '../lib/firebase';
@@ -131,14 +132,12 @@ export function Dashboard({ onStartDuel }: DashboardProps) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="flex items-center justify-end gap-3 mb-4">
-              <span className="bg-white/20 px-4 py-1 rounded-full text-xs font-black arabic-text uppercase tracking-widest border border-white/20">
-                 رتبة {currentRank}
-              </span>
-              <h1 className="text-4xl md:text-5xl font-extrabold arabic-text">
-                 {profile?.displayName} 👋
-              </h1>
-            </div>
+              <div className="flex items-center justify-end gap-3 mb-4">
+                <LevelBadge level={currentLevel} className="scale-110" />
+                <h1 className="text-4xl md:text-5xl font-extrabold arabic-text">
+                   {profile?.displayName} 👋
+                </h1>
+              </div>
             <p className="text-blue-100 text-lg md:text-xl arabic-text text-right mb-4 opacity-90 leading-relaxed transition-colors duration-300">
               لقد خضت {stats.totalDuels} تحدياً حتى الآن. مستواك الحالي هو {currentLevel}! 
             </p>
@@ -189,6 +188,7 @@ export function Dashboard({ onStartDuel }: DashboardProps) {
                  uid={profile?.uid}
                  photoURL={profile?.photoURL}
                  inventory={profile?.inventory}
+                 level={currentLevel}
                  size="xl"
                  className="group-hover:scale-110 transition-transform duration-500"
                />

@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Trophy, Medal, Crown, Star, ArrowUp } from 'lucide-react';
+import { Trophy, Medal, Crown, Star, ArrowUp, Flame } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { AppUser } from '../types';
 import { ProfileAvatar } from './ProfileAvatar';
+import { LevelBadge } from './LevelBadge';
+import { calculateLevel } from '../lib/gameLogic';
 
 export function Leaderboard() {
   const [players, setPlayers] = React.useState<AppUser[]>([]);
@@ -81,14 +83,23 @@ export function Leaderboard() {
               uid={players[1].uid}
               photoURL={players[1].photoURL}
               inventory={players[1].inventory}
+              level={calculateLevel(players[1].stats.xp)}
               size="lg"
             />
             <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-slate-400 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg z-20">
               <Medal size={20} />
             </div>
           </div>
-          <div className="w-full bg-surface rounded-[32px] p-8 text-center border-b-8 border-slate-200 dark:border-slate-800 shadow-xl shadow-primary/5 transition-colors duration-300">
-            <h3 className="font-black text-xl arabic-text text-text-main mb-1 transition-colors duration-300">{players[1].displayName}</h3>
+            <div className="w-full bg-surface rounded-[32px] p-8 text-center border-b-8 border-slate-200 dark:border-slate-800 shadow-xl shadow-primary/5 transition-colors duration-300">
+            <h3 className="font-black text-xl arabic-text text-text-main mb-1 transition-colors duration-300 flex items-center justify-center gap-1">
+              {players[1].displayName}
+              {players[1].stats.streak > 0 && (
+                <div className="flex items-center gap-0.5 text-orange-500 animate-pulse" title="سلسلة فوز">
+                  <Flame size={16} fill="currentColor" />
+                  <span className="text-xs font-black">{players[1].stats.streak}</span>
+                </div>
+              )}
+            </h3>
             <div className="flex flex-col gap-1">
                <span className="text-text-muted font-black text-sm transition-colors duration-300">{players[1].stats.xp} XP</span>
                <span className="text-text-main/60 font-black text-xs arabic-text transition-colors duration-300">{players[1].stats.wins} انتصار</span>
@@ -113,6 +124,7 @@ export function Leaderboard() {
               uid={players[0].uid}
               photoURL={players[0].photoURL}
               inventory={players[0].inventory}
+              level={calculateLevel(players[0].stats.xp)}
               size="xl"
               className="relative z-10"
             />
@@ -129,7 +141,15 @@ export function Leaderboard() {
             </div>
           </div>
           <div className="w-full bg-slate-900 rounded-[40px] p-10 text-center border-b-8 border-amber-500 shadow-2xl shadow-amber-500/20 text-white transform -translate-y-2">
-            <h3 className="font-black text-2xl arabic-text text-white mb-2">{players[0].displayName}</h3>
+            <h3 className="font-black text-2xl arabic-text text-white mb-2 flex items-center justify-center gap-1">
+              {players[0].displayName}
+              {players[0].stats.streak > 0 && (
+                <div className="flex items-center gap-0.5 text-orange-500 animate-pulse" title="سلسلة فوز">
+                  <Flame size={20} fill="currentColor" />
+                  <span className="text-xs font-black">{players[0].stats.streak}</span>
+                </div>
+              )}
+            </h3>
             <div className="flex flex-col gap-1">
                <span className="text-amber-400 font-extrabold text-lg">{players[0].stats.xp} XP</span>
                <span className="text-slate-400 font-black text-sm arabic-text">{players[0].stats.wins} انتصار</span>
@@ -150,6 +170,7 @@ export function Leaderboard() {
               uid={players[2].uid}
               photoURL={players[2].photoURL}
               inventory={players[2].inventory}
+              level={calculateLevel(players[2].stats.xp)}
               size="lg"
             />
             <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-amber-700 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-lg z-20">
@@ -157,7 +178,15 @@ export function Leaderboard() {
             </div>
           </div>
           <div className="w-full bg-surface rounded-[32px] p-8 text-center border-b-8 border-amber-700 shadow-xl shadow-amber-700/10 transition-colors duration-300">
-            <h3 className="font-black text-xl arabic-text text-text-main mb-1 transition-colors duration-300">{players[2].displayName}</h3>
+            <h3 className="font-black text-xl arabic-text text-text-main mb-1 transition-colors duration-300 flex items-center justify-center gap-1">
+              {players[2].displayName}
+              {players[2].stats.streak > 0 && (
+                <div className="flex items-center gap-0.5 text-orange-500 animate-pulse" title="سلسلة فوز">
+                  <Flame size={16} fill="currentColor" />
+                  <span className="text-xs font-black">{players[2].stats.streak}</span>
+                </div>
+              )}
+            </h3>
             <div className="flex flex-col gap-1">
                <span className="text-text-muted font-black text-sm transition-colors duration-300">{players[2].stats.xp} XP</span>
                <span className="text-text-main/60 font-black text-xs arabic-text transition-colors duration-300">{players[2].stats.wins} انتصار</span>
@@ -194,10 +223,22 @@ export function Leaderboard() {
                 uid={player.uid}
                 photoURL={player.photoURL}
                 inventory={player.inventory}
+                level={calculateLevel(player.stats.xp)}
                 size="md"
               />
               <div>
-                <div className="font-black arabic-text text-text-main text-lg transition-colors duration-300">{player.displayName}</div>
+                <div className="flex flex-row-reverse items-center gap-2">
+                  <div className="font-black arabic-text text-text-main text-lg transition-colors duration-300 flex items-center gap-1">
+                    {player.displayName}
+                    {player.stats.streak > 0 && (
+                      <div className="flex items-center gap-0.5 text-orange-500" title="سلسلة فوز">
+                        <Flame size={14} fill="currentColor" />
+                        <span className="text-[10px] font-black">{player.stats.streak}</span>
+                      </div>
+                    )}
+                  </div>
+                  <LevelBadge level={calculateLevel(player.stats.xp)} size="sm" />
+                </div>
                 <div className="flex items-center flex-row-reverse gap-1 text-[10px] text-green-500 font-black uppercase">
                    <ArrowUp size={10} />
                    <span>+2 مركز</span>

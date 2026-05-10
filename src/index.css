@@ -46,7 +46,7 @@
 }
 
 .glass-card {
-  @apply bg-white/90 backdrop-blur-md border border-white/40 shadow-xl shadow-primary/5;
+  @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl shadow-primary/5;
 }
 
 .arabic-text {

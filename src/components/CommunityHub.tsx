@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Heart, Share2, Send, Filter, MoreHorizontal, Image as ImageIcon, Video, X, Trash2, Edit2, Flag, Ban } from 'lucide-react';
+import { MessageSquare, Heart, Share2, Send, Filter, MoreHorizontal, Image as ImageIcon, Video, X, Trash2, Edit2, Flag, Ban, Flame } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, getDocs, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, arrayUnion, arrayRemove, Timestamp, limit } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { CommunityPost } from '../types';
 import { toast } from 'react-hot-toast';
 import { ProfileAvatar } from './ProfileAvatar';
+import { LevelBadge } from './LevelBadge';
+import { calculateLevel } from '../lib/gameLogic';
 
 export function CommunityHub() {
   const { user, profile } = useAuth();
@@ -101,7 +103,8 @@ export function CommunityHub() {
         authorId: user.uid,
         authorName: profile?.displayName || 'طالب مجهول',
         authorPhotoURL: profile?.photoURL || null,
-        authorLevel: profile?.stats?.level || 1,
+        authorLevel: calculateLevel(profile?.stats?.xp || 0),
+        authorStreak: profile?.stats?.streak || 0,
         authorInventory: profile?.inventory || null,
         content: newPost,
         likes: [],
@@ -317,7 +320,7 @@ export function CommunityHub() {
                    value={newPost}
                    onChange={(e) => setNewPost(e.target.value)}
                    placeholder={replyTo ? "اكتب ردك هنا..." : "ماذا يدور في ذهنك اليوم؟ شارك زملائك..."}
-                   className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-3xl p-5 text-right arabic-text font-bold focus:ring-2 focus:ring-primary/20 min-h-[120px] resize-none transition-all text-text-main"
+                   className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-3xl p-5 text-right arabic-text font-bold focus:ring-2 focus:ring-primary/20 min-h-[120px] resize-none transition-all text-slate-900 dark:text-white"
                  />
                  
                  {mediaPreview && (
@@ -431,13 +434,22 @@ export function CommunityHub() {
                       uid={post.authorId}
                       photoURL={post.authorPhotoURL}
                       inventory={post.authorInventory}
+                      level={post.authorLevel}
                       size="md"
                     />
                     <div className="text-right">
                       <div className="flex flex-row-reverse items-center justify-start gap-2">
-                         <h3 className="font-black text-text-main arabic-text">{post.authorName}</h3>
+                         <h3 className="font-black text-text-main arabic-text flex items-center gap-1">
+                           {post.authorName}
+                           {((post as any).authorStreak || 0) > 0 && (
+                             <div className="flex items-center gap-0.5 text-orange-500" title="سلسلة فوز">
+                               <Flame size={14} fill="currentColor" />
+                               <span className="text-[10px] font-black">{(post as any).authorStreak}</span>
+                             </div>
+                           )}
+                         </h3>
                          {post.authorLevel && (
-                           <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px] font-black">مستوى {post.authorLevel}</span>
+                           <LevelBadge level={post.authorLevel} size="sm" />
                          )}
                       </div>
                       <p className="text-[10px] text-text-muted font-bold arabic-text mt-0.5 flex flex-row-reverse items-center gap-1">
@@ -485,7 +497,7 @@ export function CommunityHub() {
                       <textarea
                         value={editingContent}
                         onChange={(e) => setEditingContent(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-right arabic-text font-bold focus:ring-2 focus:ring-primary/20 min-h-[100px] resize-none text-text-main"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-right arabic-text font-bold focus:ring-2 focus:ring-primary/20 min-h-[100px] resize-none text-slate-900 dark:text-white"
                       />
                       <div className="flex flex-row-reverse gap-2">
                         <button onClick={() => handleEditSubmit(post.id)} className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold arabic-text">حفظ</button>
@@ -545,12 +557,18 @@ export function CommunityHub() {
                        <div key={reply.id} className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-[24px] border border-slate-100 dark:border-slate-800 transition-colors duration-300">
                           <div className="flex flex-row-reverse justify-between items-start mb-2">
                             <div className="flex flex-row-reverse gap-3">
-                               <img src={reply.authorPhotoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${reply.authorId}`} className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 object-cover" alt="Avatar" />
+                               <ProfileAvatar 
+                                 uid={reply.authorId}
+                                 photoURL={reply.authorPhotoURL}
+                                 inventory={reply.authorInventory}
+                                 level={reply.authorLevel}
+                                 size="sm"
+                               />
                                <div className="text-right">
                                   <div className="flex flex-row-reverse items-center gap-2">
                                      <span className="text-sm font-black text-text-main arabic-text transition-colors duration-300">{reply.authorName}</span>
                                      {reply.authorLevel && (
-                                       <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[8px] font-black">مستوى {reply.authorLevel}</span>
+                                       <LevelBadge level={reply.authorLevel} size="sm" />
                                      )}
                                      {reply.replyToName && (
                                        <span className="text-[9px] font-bold text-primary arabic-text">رد على {reply.replyToName}</span>
@@ -600,7 +618,7 @@ export function CommunityHub() {
                               <textarea
                                 value={editingContent}
                                 onChange={(e) => setEditingContent(e.target.value)}
-                                className="w-full bg-surface border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-right arabic-text text-sm font-bold focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none text-text-main"
+                                className="w-full bg-surface border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-right arabic-text text-sm font-bold focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none text-slate-900 dark:text-white"
                               />
                               <div className="flex flex-row-reverse gap-2">
                                 <button onClick={() => handleEditSubmit(reply.id)} className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold arabic-text">حفظ</button>

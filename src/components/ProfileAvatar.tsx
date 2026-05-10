@@ -1,5 +1,5 @@
 import React from 'react';
-import { SHOP_ITEMS } from '../lib/gameLogic';
+import { SHOP_ITEMS, LEVEL_REWARDS } from '../lib/gameLogic';
 
 interface ProfileAvatarProps {
   photoURL?: string;
@@ -8,13 +8,19 @@ interface ProfileAvatarProps {
     activeFrame?: string;
     activeEffect?: string;
   };
+  level?: number;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-export function ProfileAvatar({ photoURL, uid, inventory, size = 'md', className = '' }: ProfileAvatarProps) {
-  const activeFrame = inventory?.activeFrame ? SHOP_ITEMS.find(i => i.id === inventory.activeFrame)?.image : '';
+export function ProfileAvatar({ photoURL, uid, inventory, level = 1, size = 'md', className = '' }: ProfileAvatarProps) {
+  let activeFrame = inventory?.activeFrame ? SHOP_ITEMS.find(i => i.id === inventory.activeFrame)?.image : '';
   const activeEffect = inventory?.activeEffect ? SHOP_ITEMS.find(i => i.id === inventory.activeEffect)?.image : '';
+
+  // Automatic level rewards
+  if (!activeFrame && level >= 20) {
+    activeFrame = LEVEL_REWARDS.FRAME_LVL_20.image;
+  }
 
   const sizeClasses = {
     xs: 'w-6 h-6',

@@ -388,11 +388,11 @@ export function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-2xl relative">
-      <div className="p-6 border-b border-slate-50 bg-white/80 backdrop-blur-md flex items-center justify-between z-10">
-        <h3 className="font-black arabic-text text-xl text-slate-800">المجلس العام 🏛️</h3>
+    <div className="flex flex-col h-[calc(100vh-120px)] bg-white dark:bg-slate-900 rounded-[32px] overflow-hidden border border-slate-100 dark:border-slate-800 shadow-2xl relative transition-colors duration-300">
+      <div className="p-6 border-b border-slate-50 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between z-10">
+        <h3 className="font-black arabic-text text-xl text-slate-800 dark:text-white transition-colors duration-300">المجلس العام 🏛️</h3>
       </div>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/30 custom-scrollbar">
         {filteredMessages.map((msg, idx) => (
           <MessageBubble 
             key={msg.id || idx} 
@@ -409,13 +409,13 @@ export function Chat() {
           />
         ))}
       </div>
-      <div className="p-6 bg-white border-t border-slate-50 flex items-center gap-4">
+      <div className="p-6 bg-white dark:bg-slate-900 border-t border-slate-50 dark:border-slate-800 flex items-center gap-4">
         <form onSubmit={handleSendMessage} className="relative flex-1 group">
           <input
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="شارك الجميع بأفكارك..."
-            className="w-full bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[24px] px-6 py-4 text-right arabic-text font-bold text-lg outline-none transition-all shadow-inner"
+            className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/20 focus:bg-white dark:focus:bg-slate-700 rounded-[24px] px-6 py-4 text-right arabic-text font-bold text-lg outline-none transition-all shadow-inner text-slate-900 dark:text-white"
           />
         </form>
         <button onClick={handleSendMessage} className="w-16 h-16 bg-primary text-white rounded-[24px] shadow-xl hover:scale-[1.05] transition-all flex items-center justify-center shrink-0">

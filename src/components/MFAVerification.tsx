@@ -37,17 +37,17 @@ export function MFAVerification() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full bg-white rounded-[40px] p-8 md:p-12 shadow-2xl text-center"
+        className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[40px] p-8 md:p-12 shadow-2xl text-center transition-colors duration-300"
       >
         <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mx-auto mb-8">
           <ShieldCheck size={48} />
         </div>
 
-        <h2 className="text-2xl font-black arabic-text text-slate-800 mb-2">التحقق بخطوتين 🔐</h2>
+        <h2 className="text-2xl font-black arabic-text text-slate-800 dark:text-white mb-2">التحقق بخطوتين 🔐</h2>
         <p className="text-slate-500 arabic-text mb-8">
           تم إرسال رمز التحقق إلى بريدك الإلكتروني:
           <br />
-          <span className="font-bold text-slate-700">{profile?.email}</span>
+          <span className="font-bold text-slate-700 dark:text-slate-200">{profile?.email}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -58,7 +58,7 @@ export function MFAVerification() {
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
-              className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 text-center text-3xl font-black tracking-[0.5em] focus:border-primary focus:bg-white outline-none transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-800 rounded-2xl py-4 text-center text-3xl font-black tracking-[0.5em] focus:border-primary focus:bg-white dark:focus:bg-slate-700 outline-none transition-all dark:text-white placeholder:text-slate-400/50"
             />
           </div>
 

@@ -2,6 +2,19 @@ import { AppUser } from '../types.ts';
 
 export const XP_PER_LEVEL = 1000;
 
+export const LEVEL_REWARDS = {
+  FRAME_LVL_20: {
+    id: 'lvl_20_frame',
+    nameAr: 'إطار النخبة',
+    image: 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 animation-gradient-x'
+  },
+  BADGE_LVL_30: {
+    id: 'lvl_30_badge',
+    nameAr: 'وسام المخضرم',
+    icon: '🛡️'
+  }
+};
+
 export function calculateLevel(xp: number): number {
   return Math.floor(xp / XP_PER_LEVEL) + 1;
 }

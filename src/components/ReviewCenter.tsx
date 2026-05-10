@@ -70,7 +70,7 @@ export function ReviewCenter() {
 
   return (
     <div className="space-y-8 pb-12 min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-primary/5">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-primary/5 transition-colors duration-300">
         <div className="text-right">
           <div className="w-16 h-16 bg-blue-50 text-primary rounded-3xl flex items-center justify-center mb-4 ml-auto">
              <History size={32} />
@@ -85,7 +85,7 @@ export function ReviewCenter() {
                placeholder="ابحث عن مادة..."
                value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
-               className="w-full md:w-64 bg-slate-50 border-2 border-transparent focus:border-primary/20 rounded-2xl px-5 py-3 text-right arabic-text font-bold outline-none transition-all"
+               className="w-full md:w-64 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/20 rounded-2xl px-5 py-3 text-right arabic-text font-bold outline-none transition-all dark:text-white"
              />
              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
           </div>
@@ -108,7 +108,7 @@ export function ReviewCenter() {
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : filteredRecords.length === 0 ? (
-        <div className="bg-white p-20 rounded-[40px] text-center border-2 border-dashed border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-20 rounded-[40px] text-center border-2 border-dashed border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-300">
           <div className="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center mx-auto mb-6">
             <History size={48} />
           </div>
@@ -127,7 +127,7 @@ export function ReviewCenter() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.03 }}
                 key={record.id}
-                className="bg-white p-6 rounded-[36px] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all group relative overflow-hidden"
+                className="bg-white dark:bg-slate-900 p-6 rounded-[36px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all group relative overflow-hidden"
               >
                 <div className={`absolute top-0 right-0 w-2 h-full ${subject?.color || 'bg-slate-400'}`} />
                 
@@ -137,7 +137,7 @@ export function ReviewCenter() {
                       <History size={24} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-black arabic-text text-slate-800 leading-none mb-2">{subject?.nameAr}</h3>
+                      <h3 className="text-xl font-black arabic-text text-slate-800 dark:text-white leading-none mb-2">{subject?.nameAr}</h3>
                       <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none">
                         {new Date(record.timestamp?.toDate ? record.timestamp.toDate() : record.timestamp).toLocaleDateString('ar-EG', { dateStyle: 'full' })}
                       </p>
@@ -151,19 +151,19 @@ export function ReviewCenter() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-slate-50 p-4 rounded-3xl text-center">
+                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl text-center transition-colors">
                        <p className="text-[8px] text-slate-400 font-black uppercase mb-1">النتيجة</p>
                        <p className={`text-2xl font-black ${record.win ? 'text-green-500' : 'text-red-500'}`}>{record.score}</p>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-3xl text-center">
+                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl text-center transition-colors">
                        <p className="text-[8px] text-slate-400 font-black uppercase mb-1">المنافس</p>
-                       <p className="text-sm font-black text-slate-800 arabic-text truncate">
+                       <p className="text-sm font-black text-slate-800 dark:text-slate-200 arabic-text truncate">
                          {record.opponentScore !== undefined ? (record.score > record.opponentScore ? 'هزمت خصمك' : 'تفوّق عليك') : 'تحدي فردي'}
                        </p>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-3xl text-center">
+                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl text-center transition-colors">
                        <p className="text-[8px] text-slate-400 font-black uppercase mb-1">الدقة</p>
-                       <p className="text-2xl font-black text-slate-800">
+                       <p className="text-2xl font-black text-slate-800 dark:text-slate-200">
                          {record.questions ? Math.round((record.questions.filter(q => q.correct).length / record.questions.length) * 100) : 0}%
                        </p>
                     </div>
@@ -227,9 +227,9 @@ export function ReviewCenter() {
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="w-full max-w-3xl bg-white rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20"
+              className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20 dark:border-slate-800 transition-colors duration-300"
             >
-              <div className="p-8 md:p-10 bg-slate-900 text-white flex flex-row-reverse items-center justify-between sticky top-0 z-10">
+              <div className="p-8 md:p-10 bg-slate-900 dark:bg-slate-950 text-white flex flex-row-reverse items-center justify-between sticky top-0 z-10 transition-colors">
                 <div className="text-right">
                   <h3 className="text-2xl font-black arabic-text mb-1">تفاصيل التحدي 🕵️‍♂️</h3>
                   <p className="text-sm text-slate-400 arabic-text font-bold">مراجعة السؤال بسؤال</p>
@@ -242,7 +242,7 @@ export function ReviewCenter() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar dark:bg-slate-900/50">
                 {selectedRecord.questions && selectedRecord.questions.length > 0 ? (
                   selectedRecord.questions.map((q, i) => {
                     const isAnswered = q.answerIndex !== undefined;
@@ -262,14 +262,14 @@ export function ReviewCenter() {
                              </div>
                              <div className="flex-1 text-right">
                                <p className="text-xs font-black text-slate-400 mb-1">السؤال {i + 1}</p>
-                               <h4 className="text-lg font-black text-slate-800 arabic-text leading-relaxed">
+                               <h4 className="text-lg font-black text-slate-800 dark:text-white arabic-text leading-relaxed transition-colors">
                                   {q.text || `سؤال في مادة ${SUBJECTS.find(s => s.id === selectedRecord.subjectId)?.nameAr}`}
                                </h4>
                              </div>
                           </div>
                           
-                          <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                             <p className={`text-sm font-bold arabic-text mb-4 ${
+                          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 transition-colors">
+                             <p className={`text-sm font-bold arabic-text mb-4 transition-colors ${
                                !isAnswered ? 'text-slate-400' : 
                                isCorrect ? 'text-green-600' : 'text-red-500'
                              }`}>
@@ -284,9 +284,9 @@ export function ReviewCenter() {
                                    <div 
                                      key={optIdx} 
                                      className={`p-4 rounded-2xl text-sm font-bold text-right arabic-text border-2 transition-all ${
-                                       isCorrectOpt ? 'bg-green-50 border-green-500 text-green-700 shadow-sm shadow-green-200' : 
-                                       isUserChoice ? 'bg-red-50 border-red-200 text-red-700' : 
-                                       'bg-slate-50 border-slate-100 text-slate-500'
+                                       isCorrectOpt ? 'bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400 shadow-sm shadow-green-200 dark:shadow-none' : 
+                                       isUserChoice ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400' : 
+                                       'bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400'
                                      }`}
                                    >
                                      <div className="flex items-center justify-between flex-row-reverse">
@@ -310,7 +310,7 @@ export function ReviewCenter() {
                 )}
               </div>
 
-              <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-row-reverse gap-4">
+              <div className="p-8 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 flex flex-row-reverse gap-4 transition-colors">
                 <button 
                   onClick={() => {
                     soundManager.playClick();

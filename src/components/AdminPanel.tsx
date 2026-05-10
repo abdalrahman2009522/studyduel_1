@@ -29,6 +29,7 @@ import {
   setDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { soundManager } from '../lib/soundManager';
 import { SUBJECTS } from '../types';
 import { GoogleGenAI } from "@google/genai";
 import { toast } from 'react-hot-toast';
@@ -39,6 +40,12 @@ export function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [userSearch, setUserSearch] = useState('');
+  
+  // Custom confirmation modal states
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [deleteCollection, setDeleteCollection] = useState<string | null>(null);
   
   // Dashboard stats
   const [stats, setStats] = useState({
@@ -123,9 +130,10 @@ export function AdminPanel() {
 
   const handleSave = async (id?: string) => {
     try {
-      if (id) {
+      if (id && id !== 'new') {
+        const { id: _, ...updateData } = editForm;
         await updateDoc(doc(db, activeTab, id), { 
-          ...editForm, 
+          ...updateData, 
           updatedAt: serverTimestamp() 
         });
       } else {
@@ -136,24 +144,35 @@ export function AdminPanel() {
       }
       setIsEditing(null);
       fetchData();
+      toast.success(id && id !== 'new' ? 'تم التحديث بنجاح' : 'تم الإضافة بنجاح');
     } catch (err) {
       console.error('Admin update failed:', err);
+      toast.error('حدث خطأ أثناء الحفظ');
     }
   };
 
   const handleDelete = async (id: string, collectionName?: string) => {
-    if (!window.confirm('الإجراء لا يمكن التراجع عنه. هل أنت متأكد من الحذف؟')) return;
+    soundManager.playClick();
+    setDeleteItemId(id);
+    setDeleteCollection(collectionName || null);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteItemId) return;
     try {
-       await deleteDoc(doc(db, collectionName || activeTab, id));
+       await deleteDoc(doc(db, deleteCollection || activeTab, deleteItemId));
        toast.success('تم الحذف بنجاح');
        fetchData();
-       // "Add notification for the supervisor"
        if (activeTab === 'moderation') {
-         // Maybe notify supervisors? Let's just create a toast or save a log
          toast.success('تم إشعار المشرفين بحذف المحتوى المبلغ عنه');
        }
     } catch (err) {
        toast.error('حدث خطأ أثناء الحذف');
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeleteItemId(null);
+      setDeleteCollection(null);
     }
   };
 
@@ -358,28 +377,36 @@ ${text}`;
       {activeTab === 'questions' && (
         <div className="bg-surface rounded-[32px] p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
-             <div className="flex gap-4">
+             <div className="flex flex-wrap gap-4">
                  <button 
-                    onClick={() => { setIsEditing('new'); setEditForm({ text: '', options: ['', '', '', ''], correctAnswer: 0, subjectId: 'arabic' }); }}
-                    className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-xl font-bold arabic-text"
+                    onClick={() => { 
+                      setIsEditing('new'); 
+                      setEditForm({ 
+                        text: '', 
+                        options: ['', '', '', ''], 
+                        correctAnswer: 0, 
+                        subjectId: selectedSubject || 'arabic' 
+                      }); 
+                    }}
+                    className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-xl font-bold arabic-text hover:bg-green-600 transition-all shadow-lg shadow-green-500/20"
                   >
                   <Plus size={20} />
-                  إضافة سؤال
+                  إضافة سؤال يدوياً
                 </button>
-                <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-700 rounded-xl px-2">
+                <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-2 transition-colors">
                    <select 
                      value={selectedSubject}
                      onChange={(e) => setSelectedSubject(e.target.value)}
-                     className="bg-transparent text-sm font-bold arabic-text border-none focus:ring-0 text-text-main"
+                     className="bg-transparent text-sm font-bold arabic-text border-none focus:ring-0 text-slate-900 dark:text-white cursor-pointer py-2 pl-2 pr-8"
                    >
-                     {SUBJECTS.map(s => <option key={s.id} value={s.id} className="bg-surface">{s.nameAr}</option>)}
+                     {SUBJECTS.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{s.nameAr}</option>)}
                    </select>
                 </div>
                 <button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 bg-amber-500 text-white px-6 py-2 rounded-xl font-bold arabic-text"
+                  className="flex items-center gap-2 bg-amber-500 text-white px-6 py-2 rounded-xl font-bold arabic-text hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
                 >
-                  <Plus size={20} />
+                  <Wifi size={20} />
                   رفع ملف (AI)
                 </button>
                 <input
@@ -393,30 +420,125 @@ ${text}`;
              </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {isEditing === 'new' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-8 bg-white dark:bg-slate-900 rounded-[32px] border-2 border-green-500/30 shadow-2xl space-y-6 transition-colors"
+              >
+                <h3 className="text-xl font-black text-right arabic-text text-slate-800 dark:text-white mb-4">إضافة سؤال جديد 📝</h3>
+                
+                <div className="text-right">
+                  <label className="text-xs font-black text-slate-400 arabic-text mb-2 block">السؤال</label>
+                  <textarea 
+                    value={editForm.text} 
+                    onChange={e => setEditForm({...editForm, text: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-right arabic-text font-bold outline-none focus:border-primary transition-all min-h-[100px] text-slate-900 dark:text-white"
+                    placeholder="اكتب نص السؤال هنا..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {editForm.options?.map((opt: string, idx: number) => (
+                    <div key={idx} className="text-right">
+                      <label className="text-[10px] font-black text-slate-400 arabic-text mb-1 block">الخيار {idx + 1}</label>
+                      <div className="relative">
+                        <input 
+                          value={opt}
+                          onChange={e => {
+                            const newOpts = [...editForm.options];
+                            newOpts[idx] = e.target.value;
+                            setEditForm({...editForm, options: newOpts});
+                          }}
+                          className={`w-full bg-slate-50 dark:bg-slate-800 border-2 rounded-2xl px-4 py-3 text-right arabic-text font-bold outline-none transition-all text-slate-900 dark:text-white ${editForm.correctAnswer === idx ? 'border-green-500' : 'border-slate-100 dark:border-slate-700 focus:border-primary'}`}
+                        />
+                        <button 
+                          onClick={() => setEditForm({...editForm, correctAnswer: idx})}
+                          className={`absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${editForm.correctAnswer === idx ? 'bg-green-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}`}
+                        >
+                          {editForm.correctAnswer === idx ? '✓' : ''}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-row-reverse gap-3 pt-4">
+                  <button onClick={() => handleSave()} className="flex-1 bg-primary text-white py-4 rounded-2xl font-black arabic-text shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">حفظ السؤال</button>
+                  <button onClick={() => setIsEditing(null)} className="px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-2xl font-black arabic-text transition-all">إلغاء</button>
+                </div>
+              </motion.div>
+            )}
+
             {items.map(item => (
-              <div key={item.id} className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-[24px] border border-slate-100 dark:border-slate-800 transition-colors duration-300">
+              <div key={item.id} className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-[28px] border border-slate-100 dark:border-slate-800 transition-colors duration-300">
                 {isEditing === item.id ? (
-                  <div className="space-y-4">
-                    <input 
-                      value={editForm.text} 
-                      onChange={e => setEditForm({...editForm, text: e.target.value})}
-                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-surface text-text-main"
-                    />
-                    <div className="flex gap-2">
-                       <button onClick={() => handleSave(item.id)} className="bg-primary text-white px-4 py-2 rounded-lg font-bold">حفظ</button>
-                       <button onClick={() => setIsEditing(null)} className="bg-slate-200 dark:bg-slate-800 text-text-muted px-4 py-2 rounded-lg font-bold">إلغاء</button>
+                  <div className="space-y-6">
+                    <div className="text-right">
+                      <label className="text-xs font-black text-slate-400 arabic-text mb-2 block">تعديل السؤال</label>
+                      <textarea 
+                        value={editForm.text} 
+                        onChange={e => setEditForm({...editForm, text: e.target.value})}
+                        className="w-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-right arabic-text font-bold outline-none focus:border-primary transition-all text-slate-900 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {editForm.options?.map((opt: string, idx: number) => (
+                        <div key={idx} className="text-right">
+                          <label className="text-[10px] font-black text-slate-400 arabic-text mb-1 block">الخيار {idx + 1}</label>
+                          <div className="relative">
+                            <input 
+                              value={opt}
+                              onChange={e => {
+                                const newOpts = [...editForm.options];
+                                newOpts[idx] = e.target.value;
+                                setEditForm({...editForm, options: newOpts});
+                              }}
+                              className={`w-full bg-white dark:bg-slate-900 border-2 rounded-2xl px-4 py-3 text-right arabic-text font-bold outline-none transition-all text-slate-900 dark:text-white ${editForm.correctAnswer === idx ? 'border-green-500' : 'border-slate-100 dark:border-slate-800 focus:border-primary'}`}
+                            />
+                            <button 
+                              onClick={() => setEditForm({...editForm, correctAnswer: idx})}
+                              className={`absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${editForm.correctAnswer === idx ? 'bg-green-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}`}
+                            >
+                              {editForm.correctAnswer === idx ? '✓' : ''}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-row-reverse gap-3">
+                       <button onClick={() => handleSave(item.id)} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold arabic-text hover:bg-primary/90 transition-all">تحديث</button>
+                       <button onClick={() => setIsEditing(null)} className="px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold arabic-text transition-all">إلغاء</button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-row-reverse justify-between items-center text-right">
                     <div className="flex-1">
-                      <div className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">{item.subjectId}</div>
-                      <h3 className="font-bold text-text-main arabic-text transition-colors duration-300">{item.text}</h3>
+                      <div className="text-[10px] font-black text-primary mb-1 uppercase tracking-widest">{item.subjectId}</div>
+                      <h3 className="font-bold text-slate-800 dark:text-white arabic-text transition-colors duration-300 leading-relaxed">{item.text}</h3>
                     </div>
                     <div className="flex gap-2 mr-4">
-                      <button onClick={() => { setIsEditing(item.id); setEditForm(item); }} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"><Edit2 size={18}/></button>
-                      <button onClick={() => handleDelete(item.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={18}/></button>
+                      <button 
+                        onClick={() => { 
+                          soundManager.playClick();
+                          setIsEditing(item.id); 
+                          setEditForm(item); 
+                        }} 
+                        className="p-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all hover:scale-110 active:scale-95"
+                        title="تعديل"
+                      >
+                        <Edit2 size={20}/>
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(item.id)} 
+                        className="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all hover:scale-110 active:scale-95"
+                        title="حذف"
+                      >
+                        <Trash2 size={20}/>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -427,39 +549,65 @@ ${text}`;
       )}
 
       {activeTab === 'users' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map(user => (
-            <div key={user.id} className="bg-surface p-6 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
-              <img src={user.photoURL} alt="Avatar" className="w-20 h-20 rounded-2xl mb-4" />
-              <h3 className="font-bold arabic-text text-xl mb-1 text-text-main">{user.displayName}</h3>
-              <p className="text-xs text-text-muted mb-4">{user.email}</p>
-              <div className={`px-4 py-1 rounded-full text-[10px] font-black arabic-text uppercase tracking-widest mb-6 ${user.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                {user.role}
+        <div className="space-y-8">
+           <div className="flex flex-row-reverse justify-between items-center bg-surface p-6 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+             <div className="relative w-full max-w-md">
+               <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+               <input 
+                 type="text"
+                 placeholder="البحث عن طالب بالاسم أو الإيميل..."
+                 value={userSearch}
+                 onChange={(e) => setUserSearch(e.target.value)}
+                 className="w-full bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-50 dark:border-slate-800 rounded-2xl py-3 pr-12 pl-4 text-right arabic-text font-bold text-slate-800 dark:text-white focus:border-primary outline-none transition-all"
+               />
+             </div>
+             <p className="text-sm font-black text-slate-500 dark:text-slate-400 arabic-text hidden sm:block">
+               {items.filter(u => 
+                 u.displayName?.toLowerCase().includes(userSearch.toLowerCase()) || 
+                 u.email?.toLowerCase().includes(userSearch.toLowerCase())
+               ).length} طالب متاح
+             </p>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items
+              .filter(u => 
+                u.displayName?.toLowerCase().includes(userSearch.toLowerCase()) || 
+                u.email?.toLowerCase().includes(userSearch.toLowerCase())
+              )
+              .map(user => (
+              <div key={user.id} className="bg-surface p-6 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
+                <img src={user.photoURL} alt="Avatar" className="w-20 h-20 rounded-2xl mb-4" />
+                <h3 className="font-bold arabic-text text-xl mb-1 text-slate-800 dark:text-white">{user.displayName}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{user.email}</p>
+                <div className={`px-4 py-1 rounded-full text-[10px] font-black arabic-text uppercase tracking-widest mb-6 ${user.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                  {user.role}
+                </div>
+                <div className="flex gap-2 mt-auto w-full">
+                  <button 
+                    onClick={() => {
+                      const newRole = user.role === 'admin' ? 'user' : 'admin';
+                      updateDoc(doc(db, 'users', user.id), { role: newRole });
+                      fetchData();
+                    }}
+                    className={`flex-1 py-3 rounded-xl font-bold arabic-text text-xs transition-all ${user.role === 'admin' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-600 hover:bg-primary hover:text-white'}`}
+                  >
+                    {user.role === 'admin' ? 'إزالة الإدارة' : 'ترقية لأدمن'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const newStatus = user.status === 'blocked' ? 'active' : 'blocked';
+                      updateDoc(doc(db, 'users', user.id), { status: newStatus });
+                      fetchData();
+                    }}
+                    className={`flex-1 py-3 rounded-xl font-bold arabic-text text-xs transition-all ${user.status === 'blocked' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white'}`}
+                  >
+                    {user.status === 'blocked' ? 'إلغاء حظر' : 'حظر الطالب'}
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2 mt-auto w-full">
-                <button 
-                  onClick={() => {
-                    const newRole = user.role === 'admin' ? 'user' : 'admin';
-                    updateDoc(doc(db, 'users', user.id), { role: newRole });
-                    fetchData();
-                  }}
-                  className={`flex-1 py-3 rounded-xl font-bold arabic-text text-xs transition-all ${user.role === 'admin' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-600 hover:bg-primary hover:text-white'}`}
-                >
-                  {user.role === 'admin' ? 'إزالة الإدارة' : 'ترقية لأدمن'}
-                </button>
-                <button 
-                  onClick={() => {
-                    const newStatus = user.status === 'blocked' ? 'active' : 'blocked';
-                    updateDoc(doc(db, 'users', user.id), { status: newStatus });
-                    fetchData();
-                  }}
-                  className={`flex-1 py-3 rounded-xl font-bold arabic-text text-xs transition-all ${user.status === 'blocked' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white'}`}
-                >
-                  {user.status === 'blocked' ? 'إلغاء حظر' : 'حظر الطالب'}
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
@@ -595,6 +743,46 @@ ${text}`;
                  </div>
               </div>
            </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDeleteConfirm(false)}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[40px] p-8 shadow-2xl text-center border border-slate-100 dark:border-slate-800 transition-colors"
+          >
+            <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+              <ShieldAlert size={40} />
+            </div>
+            <h3 className="text-2xl font-black arabic-text text-slate-800 dark:text-white mb-2">هل أنت متأكد؟ 🗑️</h3>
+            <p className="text-slate-500 arabic-text mb-8">
+              هذا الإجراء نهائي ولا يمكن التراجع عنه بعد تنفيذ مسح البيانات.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={confirmDelete}
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black arabic-text shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all"
+              >
+                نعم، احذف الآن
+              </button>
+              <button 
+                onClick={() => setShowDeleteConfirm(false)}
+                className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-2xl font-black arabic-text transition-all"
+              >
+                إلغاء الأمر
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

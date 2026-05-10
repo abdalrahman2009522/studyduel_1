@@ -21,7 +21,8 @@ import {
   Wifi,
   WifiOff,
   Bell,
-  Archive
+  Archive,
+  Flame
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ProfileAvatar } from './ProfileAvatar';
@@ -114,7 +115,15 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                   {isConnected && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full z-10" />}
                 </div>
                 <div className="text-right flex-1 min-w-0">
-                  <div className="text-sm font-black text-text-main arabic-text leading-tight truncate transition-colors duration-300">{profile.displayName}</div>
+                  <div className="text-sm font-black text-text-main arabic-text leading-tight truncate transition-colors duration-300 flex items-center justify-end gap-1">
+                    {profile.stats.streak > 0 && (
+                      <div className="flex items-center gap-0.5 text-orange-500 animate-pulse">
+                        <Flame size={12} fill="currentColor" />
+                        <span className="text-[9px]">{profile.stats.streak}</span>
+                      </div>
+                    )}
+                    {profile.displayName}
+                  </div>
                   <div className="text-[10px] text-text-muted font-bold arabic-text uppercase mt-0.5">
                     {profile.role === 'admin' ? 'الإدارة' : 'طالب متميز'}
                   </div>

@@ -63,13 +63,13 @@ export function Suggestions() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
       <div className="text-right">
-        <h1 className="text-4xl font-black text-slate-800 arabic-text mb-2 tracking-tight">صندوق الاقتراحات 💡</h1>
-        <p className="text-slate-500 arabic-text font-bold text-lg">شاركنا أفكارك لنجعل "ستادي دويل" أفضل منصة للطلاب</p>
+        <h1 className="text-4xl font-black text-slate-800 dark:text-white arabic-text mb-2 tracking-tight transition-colors">صندوق الاقتراحات 💡</h1>
+        <p className="text-slate-500 dark:text-slate-400 arabic-text font-bold text-lg transition-colors">شاركنا أفكارك لنجعل "ستادي دويل" أفضل منصة للطلاب</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-[40px] shadow-xl shadow-primary/5 border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] shadow-xl shadow-primary/5 border border-slate-100 dark:border-slate-800">
             {submitted ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -79,8 +79,8 @@ export function Suggestions() {
                 <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Sparkles size={40} />
                 </div>
-                <h3 className="text-2xl font-black arabic-text text-slate-800">شكراً لك! ✨</h3>
-                <p className="text-slate-500 arabic-text font-bold">لقد استلمنا اقتراحك وسنقوم بدراسته بعناية.</p>
+                <h3 className="text-2xl font-black arabic-text text-slate-800 dark:text-white">شكراً لك! ✨</h3>
+                <p className="text-slate-500 dark:text-slate-400 arabic-text font-bold">لقد استلمنا اقتراحك وسنقوم بدراسته بعناية.</p>
                 <button 
                   onClick={() => setSubmitted(false)}
                   className="mt-6 px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl font-black arabic-text hover:bg-slate-200 transition-all"
@@ -120,7 +120,7 @@ export function Suggestions() {
                      value={suggestion}
                      onChange={(e) => setSuggestion(e.target.value)}
                      placeholder="اشرح لنا اقتراحك بالتفصيل..."
-                     className="w-full bg-slate-50 border-none rounded-3xl p-6 text-right arabic-text font-bold min-h-[200px] focus:ring-4 focus:ring-primary/10 transition-all text-lg"
+                     className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-3xl p-6 text-right arabic-text font-bold min-h-[200px] focus:ring-4 focus:ring-primary/10 transition-all text-lg text-slate-900 dark:text-white"
                      required
                    />
                 </div>
